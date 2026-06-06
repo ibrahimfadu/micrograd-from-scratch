@@ -31,7 +31,7 @@ class Value():
         #Calculate the gradient using calculus
         def _backward():
             self.grad += out.grad 
-            other.grad += out.grad
+            other.grad += -out.grad
         out._backward = _backward; 
         return out
     
@@ -50,11 +50,12 @@ class Value():
 
     #Power function
     def __pow__(self,other):
-        out = Value(self.data**other.data,label='pow',_op='**')
+        if(isinstance(other,(int,float))):
+            other = Value(other)
+        out = Value(self.data**other.data,(self,other),label='pow',_op='**')
 
         def _backward():
-            self.grad = (other.data)*(self.data**(other.data-1))*out.grad 
-            other.grad = (self.data)*(other.data**(self.data-1))*out.grad 
+            self.grad += (other.data)*(self.data**(other.data-1))*out.grad 
         out._backward = _backward
         return out 
 
@@ -64,10 +65,17 @@ class Value():
         return self*other;
     def __radd__(self,other):
         return self+other
-    def __rsub__(self,other):
-        return self-other
-    def __rpow__(self,other):
-        return self**other
+    def __rsub__(self, other):
+        # FIXED: Handles order-dependent subtraction (e.g., 5 - x)
+        if isinstance(other, (int, float)):
+            other = Value(other)
+        return other - self
+        
+    def __rpow__(self, other):
+        # FIXED: Handles order-dependent powering (e.g., 2 ** x)
+        if isinstance(other, (int, float)):
+            other = Value(other)
+        return other ** self
 
     #Activation functions
     #tanh
@@ -75,10 +83,10 @@ class Value():
         if(isinstance(self,(int,float))):
             self = Value(self)
         t = self.data  
-        out = Value((math.exp(2*t)-1)/(math.exp(2*t)+1),label='tanh'); #This is the hyprbolic function 
+        out = Value((math.exp(2*t)-1)/(math.exp(2*t)+1),(self,),label='tanh'); #This is the hyprbolic function 
 
         def _backward():
-            self.grad += (1-t**2) * out.grad#(1-t^2) //This is the derivative of the tanh
+            self.grad += (1-out.data**2) * out.grad#(1-t^2) //This is the derivative of the tanh
 
         out._backward = _backward
 
@@ -101,7 +109,8 @@ class Value():
         
         self.grad = 1.0
         for node in reversed(topo):
-          node._backward()
+            node._backward()
+
 
 
 

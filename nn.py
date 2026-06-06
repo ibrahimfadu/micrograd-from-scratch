@@ -17,13 +17,12 @@ weights = weights+learningRate*gradient
 class Neuron():
     def __init__(self,nip): # size of the input layer
         #Random weights
-        self.w =[random.uniform(-1,1) for _ in range(nip)] # This create the random weights between -1 to 1 
-        self.b = random.uniform(-1,1) # we are using just one bias
+        self.w =[Value(random.uniform(-1,1)) for _ in range(nip)] # This create the random weights between -1 to 1 
+        self.b = Value(random.uniform(-1,1)) # we are using just one bias
      
     def __call__(self,x): #when the object is called this function is called automatically // x is the input
+
         out  = sum([i*w for i,w in zip(self.w,x)],self.b) 
-        if(isinstance(out,(int,float))):
-            out = Value(out)
         act = out.tanh()
         return act
     def parameters(self):

@@ -17,12 +17,21 @@ xs = [
 ys = [1.0, -1.0, -1.0, 1.0]
 
 mlp = MLP(3,[4,1])
-for x in xs:
-    yp = mlp(x) 
-    loss = (yp-ys)**2
 
-loss = sum((pred - y)**2 for pred, y in zip(yp, ys))
+loss=[]
 
+for x,y in zip(xs,ys):
+    yp=mlp(x)
+    loss += [(yp-y)**2]
+
+loss = sum(loss)
+
+loss.backward()
+
+mlp.parameters()
+
+print(loss)
+    
 
 
 
